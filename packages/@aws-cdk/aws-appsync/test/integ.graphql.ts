@@ -1,5 +1,6 @@
 import { UserPool } from '@aws-cdk/aws-cognito';
 import { AttributeType, BillingMode, Table } from '@aws-cdk/aws-dynamodb';
+import { Code, Function, Runtime } from '@aws-cdk/aws-lambda';
 import { App, RemovalPolicy, Stack } from '@aws-cdk/core';
 import { join } from 'path';
 import { GraphQLApi, KeyCondition, MappingTemplate, PrimaryKey, UserPoolDefaultAction, Values } from '../lib';
@@ -40,6 +41,24 @@ noneDS.createResolver({
   responseMappingTemplate: MappingTemplate.fromString(JSON.stringify({
     version: 'v1',
   })),
+});
+
+const resolverFunction = new Function(stack, 'ResolverFunction', {
+  runtime: Runtime.PYTHON_3_6,
+  code: Code.fromInline('def main(): pass'),
+  handler: 'index.main',
+});
+
+const lambdaDS = api.addLambdaDataSource('Lambda', 'The lambda data source', resolverFunction);
+
+lambdaDS.createResolver({
+  typeName: 'Query',
+  fieldName: 'lambdaQuery',
+});
+
+lambdaDS.createResolver({
+  typeName: 'Mutation',
+  fieldName: 'lambdaMutation',
 });
 
 const customerTable = new Table(stack, 'CustomerTable', {

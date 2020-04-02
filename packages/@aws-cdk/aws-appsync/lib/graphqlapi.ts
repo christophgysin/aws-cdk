@@ -541,6 +541,14 @@ export class LambdaDataSource extends BaseDataSource {
     });
     props.lambdaFunction.grantInvoke(this.serviceRole);
   }
+
+  public createResolver(props: BaseResolverProps): Resolver {
+    return super.createResolver({
+      requestMappingTemplate: MappingTemplate.lambdaRequest(),
+      responseMappingTemplate: MappingTemplate.lambdaResult(),
+      ...props,
+    });
+  }
 }
 
 function concatAndDedup<T>(left: T[], right: T[]): T[] {
